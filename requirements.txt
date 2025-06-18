@@ -4,3 +4,4 @@ joblib
 pandas
 gunicorn
 flask_sqlalchemy
+mysql-connector-python
