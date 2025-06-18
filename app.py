@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import joblib
 import csv
+import os
 
 app = Flask(__name__)
 app.secret_key = 'mot-de-passe-super-secret'
