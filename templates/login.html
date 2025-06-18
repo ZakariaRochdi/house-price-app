@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion - AI Estimator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 400px;
+      color: white;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 18px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .login-box input::placeholder {
+      color: #eee;
+    }
+
+    .login-box input:focus {
+      background: rgba(255,255,255,0.3);
+      outline: none;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(45deg, #16a085, #2980b9);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .login-box button:hover {
+      transform: scale(1.05);
+    }
+
+    .error {
+      text-align: center;
+      color: #ffcccb;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      text-decoration: none;
+      color: #dceaff;
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .back-home:hover {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2><i class="fas fa-lock"></i> Connexion</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <p class="error">{{ messages[0] }}</p>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+      <input type="email" name="email" placeholder="📧 Adresse email" required>
+      <input type="password" name="password" placeholder="🔑 Mot de passe" required>
+      <button type="submit"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+    </form>
+
+    <a href="/" class="back-home">← Retour à l'accueil</a>
+  </div>
+
+</body>
+</html>   

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Archives des évaluations</title>
+  <link rel="shortcut icon" href="https://images.emojiterra.com/twitter/v13.1/512px/1f4ca.png">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Quicksand', sans-serif;
+      background: #f4f4f4;
+      color: #2c3e50;
+      padding: 40px;
+    }
+
+    .logout-btn {
+      text-decoration: none;
+      color: white;
+      background: #e74c3c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: #c0392b;
+    }
+
+    .toggle-mode {
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      box-shadow: none;
+    }
+
+    .toggle-mode:hover {
+      transform: scale(1.2);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .titre-global {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      font-size: 2.5em;
+    }
+
+    .emoji-fixe {
+      font-size: 1.3em;
+      line-height: 1;
+      color: black;
+    }
+
+    .texte-degrade {
+      background: linear-gradient(270deg, #6a11cb, #2575fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    table {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+    }
+
+    th, td {
+      padding: 15px 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: white;
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .boutons-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 500px;
+      margin: 30px auto 0 auto;
+      gap: 20px;
+    }
+
+    .btn-retour, .btn-export {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      border-radius: 30px;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .btn-retour {
+      background: linear-gradient(45deg, #16a085, #1abc9c);
+    }
+
+    .btn-export {
+      background: linear-gradient(45deg, #3498db, #2575fc);
+    }
+
+    .btn-retour:hover,
+    .btn-export:hover {
+      transform: scale(1.05);
+    }
+
+    @media screen and (max-width: 768px) {
+      .titre-global {
+        font-size: 1.8em;
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+      }
+
+      .top-bar {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      table {
+        font-size: 12px;
+        width: 100%;
+        overflow-x: auto;
+        display: block;
+      }
+
+      .boutons-actions {
+        flex-direction: column;
+        gap: 15px;
+        max-width: 90%;
+      }
+
+      .btn-retour, .btn-export {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    /* MODE SOMBRE */
+    body.dark-mode {
+      background: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode table {
+      background-color: #ffffff;
+    }
+
+    body.dark-mode th {
+      background-color: #2c3e50;
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+
+    body.dark-mode td,
+    body.dark-mode td strong {
+      color: #222 !important;
+    }
+
+    body.dark-mode tr:hover {
+      background-color: #f6f6f6 !important;
+    }
+
+    body.dark-mode tr:hover td {
+      color: #222 !important;
+    }
+
+    body.dark-mode .btn-retour {
+      background: linear-gradient(45deg, #11998e, #38ef7d);
+    }
+
+    body.dark-mode .btn-export {
+      background: linear-gradient(45deg, #2980b9, #6dd5fa);
+    }
+
+    body.dark-mode .emoji-fixe {
+      color: white;
+    }
+
+    .btn-delete {
+      display: block;
+      margin: 30px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background-color: #e74c3c;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .btn-delete:hover {
+      background-color: #c0392b;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <button class="toggle-mode" onclick="toggleMode()">🌙</button>
+    <a href="{{ url_for('logout') }}" class="logout-btn">🔓 Se déconnecter</a>
+  </div>
+
+  <h1 class="titre-global">
+    <span class="emoji-fixe">📊</span>
+    <span class="texte-degrade">Historique des Estimations</span>
+  </h1>
+
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Longitude</th>
+      <th>Latitude</th>
+      <th>Pièces</th>
+      <th>Chambres</th>
+      <th>Population</th>
+      <th>Ménages</th>
+      <th>Revenu</th>
+      <th>Proximité Océan</th>
+      <th>Estimation $</th>
+    </tr>
+    {% for e in estimations %}
+    <tr>
+      <td>{{ e.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td>{{ e.latitude }}</td>
+      <td>{{ e.longitude }}</td>
+      <td>{{ e.total_rooms }}</td>
+      <td>{{ e.total_bedrooms }}</td>
+      <td>{{ e.population }}</td>
+      <td>{{ e.households }}</td>
+      <td>{{ e.median_income }}</td>
+      <td>{{ e.ocean_proximity }}</td>
+      <td><strong>{{ e.prediction }} $</strong></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="boutons-actions">
+    <a href="/" class="btn-retour">← Retour à l’estimateur</a>
+    <a href="{{ url_for('export_csv') }}" class="btn-export">⬇ Exporter en CSV</a>
+  </div>
+
+  <form method="POST" action="{{ url_for('delete_estimations') }}">
+    <button type="submit" class="btn-delete">🗑 Supprimer toutes les données</button>
+  </form>
+
+  <script>
+    function toggleMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      document.querySelector('.toggle-mode').textContent = isDark ? '☀' : '🌙';
+    }
+  </script>
+
+</body>
+</html>
