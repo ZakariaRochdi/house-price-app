@@ -3,13 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import joblib
 import csv
-import os
 
 app = Flask(__name__)
 app.secret_key = 'mot-de-passe-super-secret'
 
 # 🔗 Connexion à MySQL (modifie le mot de passe si besoin)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estimations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
