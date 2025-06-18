@@ -1,4 +1,4 @@
-Flask
+flask
 flask_sqlalchemy
 mysql-connector-python
 gunicorn
@@ -7,6 +7,6 @@ joblib
 scikit-learn
 numpy
 pandas
-os
+
 
 
