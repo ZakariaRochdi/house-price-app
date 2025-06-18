@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'mot-de-passe-super-secret'
 
 # 🔗 Connexion à MySQL (modifie le mot de passe si besoin)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:123456@localhost/maison_estimator'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
