@@ -1,7 +1,11 @@
-flask
-scikit-learn
-joblib
-pandas
-gunicorn
+Flask
 flask_sqlalchemy
 mysql-connector-python
+gunicorn
+xgboost
+joblib
+scikit-learn
+numpy
+pandas
+
+
