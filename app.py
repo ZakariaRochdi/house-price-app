@@ -8,15 +8,19 @@ import os
 app = Flask(__name__)
 app.secret_key = 'mot-de-passe-super-secret'
 
-# 🔗 Connexion à MySQL (modifie le mot de passe si besoin)
+# 📦 Configuration base de données SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estimations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# 📦 Charger le modèle entraîné
-model = joblib.load('model.pkl')
+# 📦 Chargement du modèle avec sécurité
+try:
+    model = joblib.load('model.pkl')
+except Exception as e:
+    print(f"Erreur de chargement du modèle: {e}")
+    model = None
 
-# 📋 Modèle SQLAlchemy = structure de la table estimation
+# 📋 Structure de la table
 class Estimation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     longitude = db.Column(db.Float)
@@ -39,8 +43,10 @@ def home():
 # 🎯 Route de prédiction
 @app.route('/predict', methods=['POST'])
 def predict():
+    if model is None:
+        return "Erreur : Le modèle est introuvable."
+
     try:
-        # 1. Récupérer les données du formulaire
         longitude = float(request.form['longitude'])
         latitude = float(request.form['latitude'])
         housing_median_age = float(request.form['housing_median_age'])
@@ -51,7 +57,6 @@ def predict():
         median_income = float(request.form['median_income'])
         ocean = request.form['ocean_proximity']
 
-        # 2. Codage one-hot
         ocean_map = {
             'INLAND': [1, 0, 0, 0],
             'ISLAND': [0, 1, 0, 0],
@@ -60,7 +65,6 @@ def predict():
         }
         ocean_features = ocean_map.get(ocean, [0, 0, 0, 0])
 
-        # 3. Prédiction
         features = np.array([
             longitude, latitude, housing_median_age, total_rooms,
             total_bedrooms, population, households, median_income
@@ -69,7 +73,6 @@ def predict():
         prediction = model.predict(features)[0]
         prediction_rounded = round(float(prediction), 2)
 
-        # 4. Enregistrement dans la base MySQL
         estimation = Estimation(
             longitude=longitude,
             latitude=latitude,
@@ -85,35 +88,30 @@ def predict():
         db.session.add(estimation)
         db.session.commit()
 
-        # 5. Affichage
         return render_template('design.html', prediction=prediction_rounded)
 
     except Exception as e:
-        return f"Erreur : {str(e)}"
+        return f"Erreur lors de la prédiction : {str(e)}"
 
 # 📄 Historique des prédictions
 @app.route('/historique')
 def historique():
     if 'user' not in session:
         return redirect(url_for('login'))
-
     estimations = Estimation.query.order_by(Estimation.created_at.desc()).all()
     return render_template('historique.html', estimations=estimations)
 
-# 🔐 Connexion utilisateur
+# 🔐 Connexion
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-
-        # Pour le test : login fixe
         if email == 'admin@gmail.com' and password == '123456':
             session['user'] = email
             return redirect(url_for('historique'))
         else:
             flash('❌ Identifiants incorrects')
-
     return render_template('login.html')
 
 # 🔓 Déconnexion
@@ -123,7 +121,7 @@ def logout():
     flash("Vous êtes déconnecté.")
     return redirect(url_for('login'))
 
-# ⬇️ Export CSV
+# ⬇️ Exporter en CSV
 @app.route('/export_csv')
 def export_csv():
     if 'user' not in session:
@@ -136,12 +134,9 @@ def export_csv():
         for e in estimations:
             yield f'{e.id},{e.longitude},{e.latitude},{e.housing_median_age},{e.total_rooms},{e.total_bedrooms},{e.population},{e.households},{e.median_income},{e.ocean_proximity},{e.prediction},{e.created_at}\n'
 
-    return Response(
-        generate(),
-        mimetype='text/csv',
-        headers={'Content-Disposition': 'attachment; filename=historique_predictions.csv'}
-    )
-# Supprimer toutes les estimations
+    return Response(generate(), mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=historique_predictions.csv'})
+
+# 🗑 Supprimer estimations
 @app.route('/delete_estimations', methods=['POST'])
 def delete_estimations():
     Estimation.query.delete()
@@ -153,6 +148,5 @@ def delete_estimations():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
