@@ -1,13 +1,8 @@
-setuptools>=65.5.0
-Flask
-flask_sqlalchemy
-mysql-connector-python
-gunicorn
-xgboost
-joblib
-scikit-learn
-numpy
-pandas
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+gunicorn==23.0.0
+numpy==1.26.4
+joblib==1.4.2
 
 
 
