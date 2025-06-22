@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import joblib
 import csv
+import os
 
 app = Flask(__name__)
 app.secret_key = 'mot-de-passe-super-secret'
@@ -151,6 +152,7 @@ def delete_estimations():
 # 🚀 Lancement
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Crée le fichier estimations.db et la table Estimation s'ils n'existent pas
-    app.run(debug=True)
+        db.create_all()
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
