@@ -1,26 +1,30 @@
-from flask import Flask, request, render_template, redirect, url_for, session, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_sqlalchemy import SQLAlchemy
-import numpy as np
+from werkzeug.security import generate_password_hash, check_password_hash
 import joblib
-import csv
+import numpy as np
 import os
 
 app = Flask(__name__)
-app.secret_key = 'mot-de-passe-super-secret'
+app.secret_key = 'super-secret-key'
 
-# 📦 Configuration base de données SQLite
+# Configuration DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estimations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# 📦 Chargement du modèle avec sécurité
-try:
-    model = joblib.load('model.pkl')
-except Exception as e:
-    print(f"Erreur de chargement du modèle: {e}")
-    model = None
+# ------------------ MODELS -------------------
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
 
-# 📋 Structure de la table
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
 class Estimation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     longitude = db.Column(db.Float)
@@ -35,14 +39,74 @@ class Estimation(db.Model):
     prediction = db.Column(db.Float)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-# 🏠 Page d'accueil
-@app.route('/', methods=['GET'])
-def home():
-    return render_template('design.html')
+with app.app_context():
+    db.create_all()
 
-# 🎯 Route de prédiction
+# ------------------ MODEL ML -------------------
+try:
+    model = joblib.load('model.pkl')
+except:
+    model = None
+
+# ------------------ ROUTES AUTH -------------------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        if User.query.filter_by(email=email).first():
+            flash('❌ Email déjà utilisé.')
+            return redirect(url_for('register'))
+
+        new_user = User(email=email)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('✅ Compte créé ! Connectez-vous.')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            session['user'] = email
+            flash(f'✅ Bienvenue {email} !')
+            return redirect(url_for('home_page'))
+        flash('❌ Identifiants incorrects.')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    flash('✅ Vous êtes déconnecté.')
+    return redirect(url_for('login'))
+
+# ------------------ ROUTES APP -------------------
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
+@app.route('/home')
+def home_page():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('home.html')
+
+@app.route('/predict_page')
+def predict_page():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    return render_template('prédicteur.html')
+
 @app.route('/predict', methods=['POST'])
 def predict():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     if model is None:
         return "Erreur : Le modèle est introuvable."
 
@@ -88,12 +152,11 @@ def predict():
         db.session.add(estimation)
         db.session.commit()
 
-        return render_template('design.html', prediction=prediction_rounded)
+        return render_template('prédicteur.html', prediction=prediction_rounded)
 
     except Exception as e:
         return f"Erreur lors de la prédiction : {str(e)}"
 
-# 📄 Historique des prédictions
 @app.route('/historique')
 def historique():
     if 'user' not in session:
@@ -101,42 +164,26 @@ def historique():
     estimations = Estimation.query.order_by(Estimation.created_at.desc()).all()
     return render_template('historique.html', estimations=estimations)
 
-# 🔐 Connexion
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        if email == 'admin@gmail.com' and password == '123456':
-            session['user'] = email
-            return redirect(url_for('historique'))
-        else:
-            flash('❌ Identifiants incorrects')
-    return render_template('login.html')
+@app.route('/map')
+def map_page():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    estimations = Estimation.query.order_by(Estimation.created_at.desc()).all()
+    return render_template('map.html', estimations=estimations)
 
-# 🔓 Déconnexion
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    flash("Vous êtes déconnecté.")
-    return redirect(url_for('login'))
 
-# ⬇️ Exporter en CSV
+
 @app.route('/export_csv')
 def export_csv():
     if 'user' not in session:
         return redirect(url_for('login'))
-
     estimations = Estimation.query.order_by(Estimation.created_at.desc()).all()
-
     def generate():
         yield 'ID,Longitude,Latitude,HousingMedianAge,TotalRooms,TotalBedrooms,Population,Households,MedianIncome,OceanProximity,Prediction,CreatedAt\n'
         for e in estimations:
             yield f'{e.id},{e.longitude},{e.latitude},{e.housing_median_age},{e.total_rooms},{e.total_bedrooms},{e.population},{e.households},{e.median_income},{e.ocean_proximity},{e.prediction},{e.created_at}\n'
-
     return Response(generate(), mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=historique_predictions.csv'})
 
-# 🗑 Supprimer estimations
 @app.route('/delete_estimations', methods=['POST'])
 def delete_estimations():
     Estimation.query.delete()
@@ -144,9 +191,6 @@ def delete_estimations():
     flash("Toutes les estimations ont été supprimées.")
     return redirect(url_for('historique'))
 
-# 🚀 Lancement
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host="0.0.0.0", port=port)
