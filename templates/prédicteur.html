@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Prédire le prix{% endblock %}
+{% block content %}
+<div class="form-container">
+  <h2 class="predict-title">🔮 Prédire le prix d'une maison</h2>
+  <form method="POST" action="/predict">
+    <input type="number" step="any" name="longitude" placeholder="Longitude" required>
+    <input type="number" step="any" name="latitude" placeholder="Latitude" required>
+    <input type="number" step="any" name="housing_median_age" placeholder="Âge médian des maisons" required>
+    <input type="number" step="any" name="total_rooms" placeholder="Total des pièces" required>
+    <input type="number" step="any" name="total_bedrooms" placeholder="Total des chambres" required>
+    <input type="number" step="any" name="population" placeholder="Population" required>
+    <input type="number" step="any" name="households" placeholder="Ménages" required>
+    <input type="number" step="any" name="median_income" placeholder="Revenu médian" required>
+    
+
+   <div class="radio-group">
+  <label>Proximité à l’océan :</label>
+  <label><input type="radio" name="ocean_proximity" value="INLAND" required> INLAND</label>
+  <label><input type="radio" name="ocean_proximity" value="ISLAND"> ISLAND</label>
+  <label><input type="radio" name="ocean_proximity" value="NEAR BAY"> NEAR BAY</label>
+  <label><input type="radio" name="ocean_proximity" value="NEAR OCEAN"> NEAR OCEAN</label>
+</div>
+    <button type="submit">🎯 Prédire maintenant</button>
+  </form>
+
+  {% if prediction %}
+  <div class="prediction-result">
+    🏠 <span class="prediction-label">Prix estimé :</span> <span class="prediction-value">{{ prediction }} $</span>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

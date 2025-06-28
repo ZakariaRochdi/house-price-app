@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}AI House Estimator{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+
+{# Cacher le header sur login & register #}
+{% if request.endpoint not in ['login', 'register'] %}
+<header>
+  <nav class="navbar">
+    <div class="nav-left">
+      <h1 class="app-title">IHE</h1>
+    </div>
+    {% if session.get('user') %}
+    <div class="nav-right">
+      <a href="{{ url_for('home_page') }}">Accueil</a>
+      <a href="{{ url_for('predict_page') }}">Prédicteur</a>
+      <a href="{{ url_for('historique') }}">Historique</a>
+      <a href="{{ url_for('map_page') }}">Map</a>
+      <a href="{{ url_for('logout') }}">Déconnexion</a>
+    </div>
+    {% endif %}
+  </nav>
+</header>
+{% endif %}
+
+{# Messages flash #}
+
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+{# ✅ Footer visible uniquement hors login et register #}
+{% if request.endpoint not in ['login', 'register'] %}
+<footer>
+  <p>© 2025 AI House Estimator. Tous droits réservés.</p>
+</footer>
+{% endif %}
+
+</body>
+</html>

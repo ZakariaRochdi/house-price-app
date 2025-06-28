@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Carte des Estimations{% endblock %}
+{% block content %}
+<h2 class="predict-title">🗺️ Carte des Estimations</h2>
+<div id="map"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+  // Initialise la carte
+  const map = L.map('map').setView([36.7783, -119.4179], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Données passées depuis Flask
+  const estimations = [
+    {% for e in estimations %}
+    {
+      lat: {{ e.latitude }},
+      lon: {{ e.longitude }},
+      prix: {{ e.prediction }},
+      date: "{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}",
+      ocean: "{{ e.ocean_proximity }}",
+      income: {{ e.median_income }},
+      city: "{{ e.city }}"
+    },
+    {% endfor %}
+  ];
+
+  // Ajoute les markers sur la carte
+  estimations.forEach(e => {
+    L.marker([e.lat, e.lon]).addTo(map)
+     .bindPopup(
+       `<b>📅 ${e.date}</b><br>
+        💵 Estimation : ${e.prix} $<br>
+        🌊 Proximité : ${e.ocean}<br>
+        🏦 Revenu médian : ${e.income} $<br>
+        📍 Latitude : ${e.lat}, Longitude : ${e.lon}<br>
+        🏙️ Ville : ${e.city}`
+     );
+  });
+</script>
+{% endblock %}
